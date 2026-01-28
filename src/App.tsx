@@ -55,12 +55,12 @@ function MortgageCalculator() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <header className="mb-8">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">{t.appTitle}</h1>
-              <p className="text-gray-600 mt-2">
+      <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+        <header className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+            <div className="min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t.appTitle}</h1>
+              <p className="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2">
                 {t.appSubtitle}
               </p>
             </div>
@@ -68,7 +68,7 @@ function MortgageCalculator() {
           </div>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
           <div className="lg:col-span-1">
             <MortgageForm
               value={formState}
@@ -76,7 +76,7 @@ function MortgageCalculator() {
             />
           </div>
 
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-8">
             {result && (
               <>
                 <Summary summary={result.summary} />
