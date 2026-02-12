@@ -5,6 +5,10 @@ export interface Translations {
   appTitle: string;
   appSubtitle: string;
 
+  // Tabs
+  tabCalculator: string;
+  tabScenarios: string;
+
   // Form labels
   formTitle: string;
   propertyPrice: string;
@@ -26,9 +30,16 @@ export interface Translations {
   dayCount365Description: string;
   dayCount360Description: string;
 
+  // First payment adjustment
+  firstPaymentAdjustment: string;
+  firstPeriodDays: string;
+  firstPeriodDaysHint: string;
+  enableFirstPaymentAdjustment: string;
+
   // Summary
   summaryTitle: string;
   monthlyPayment: string;
+  firstPaymentLabel: string;
   lastPayment: string;
   loanAmountLabel: string;
   totalInterest: string;
@@ -57,12 +68,67 @@ export interface Translations {
   currencyCode: string;
   currencySymbol: string;
   locale: string;
+
+  // Scenario tab
+  scenarioTitle: string;
+  scenarioSubtitle: string;
+  scenarioBaseLoan: string;
+  scenarioExtraPayments: string;
+  scenarioRateChanges: string;
+  scenarioResults: string;
+
+  // Extra payments
+  addExtraPayment: string;
+  extraPaymentAmount: string;
+  extraPaymentFrequency: string;
+  extraPaymentOneTime: string;
+  extraPaymentMonthly: string;
+  extraPaymentYearly: string;
+  extraPaymentStartAt: string;
+  extraPaymentEndAt: string;
+  extraPaymentEffect: string;
+  extraPaymentReduceTerm: string;
+  extraPaymentReducePayment: string;
+  extraPaymentRemove: string;
+  paymentNumberLabel: string;
+  optionalLabel: string;
+
+  // Rate changes
+  addRateChange: string;
+  newRate: string;
+  rateChangeAtPayment: string;
+  rateChangeRemove: string;
+
+  // Scenario results
+  scenarioComparison: string;
+  originalLabel: string;
+  scenarioLabel: string;
+  differenceLabel: string;
+  interestSaved: string;
+  paymentsSaved: string;
+  totalExtraPaymentsMade: string;
+  monthsLabel: string;
+  newMonthlyPayment: string;
+  scenarioSchedule: string;
+  scheduleExtraPayment: string;
+  scheduleRate: string;
+
+  // Start date
+  startYear: string;
+  startMonth: string;
+
+  // Calculate
+  calculateScenario: string;
+  noEventsHint: string;
 }
 
 export const translations: Record<Language, Translations> = {
   en: {
     appTitle: 'Mortgage Calculator',
     appSubtitle: 'Calculate your mortgage payments with detailed amortization schedule',
+
+    tabCalculator: 'Calculator',
+    tabScenarios: 'Scenarios',
 
     formTitle: 'Loan Parameters',
     propertyPrice: 'Property Price',
@@ -84,8 +150,14 @@ export const translations: Record<Language, Translations> = {
     dayCount365Description: 'Actual days per month, 365 days/year',
     dayCount360Description: '30 days per month, 360 days/year',
 
+    firstPaymentAdjustment: 'First Payment Adjustment',
+    firstPeriodDays: 'Days in first period',
+    firstPeriodDaysHint: 'Number of days from loan disbursement to first payment (e.g., 45 if disbursed mid-month)',
+    enableFirstPaymentAdjustment: 'Adjust first payment',
+
     summaryTitle: 'Summary',
     monthlyPayment: 'Monthly Payment',
+    firstPaymentLabel: 'First payment',
     lastPayment: 'Last payment',
     loanAmountLabel: 'Loan Amount',
     totalInterest: 'Total Interest',
@@ -110,11 +182,60 @@ export const translations: Record<Language, Translations> = {
     currencyCode: 'USD',
     currencySymbol: '$',
     locale: 'en-US',
+
+    scenarioTitle: 'What-If Scenarios',
+    scenarioSubtitle: 'See how extra payments and rate changes affect your mortgage',
+    scenarioBaseLoan: 'Base Loan Parameters',
+    scenarioExtraPayments: 'Extra Payments',
+    scenarioRateChanges: 'Rate Changes',
+    scenarioResults: 'Scenario Results',
+
+    addExtraPayment: 'Add extra payment',
+    extraPaymentAmount: 'Amount',
+    extraPaymentFrequency: 'Frequency',
+    extraPaymentOneTime: 'One-time',
+    extraPaymentMonthly: 'Monthly',
+    extraPaymentYearly: 'Yearly',
+    extraPaymentStartAt: 'Start at payment #',
+    extraPaymentEndAt: 'End at payment #',
+    extraPaymentEffect: 'Effect',
+    extraPaymentReduceTerm: 'Reduce term',
+    extraPaymentReducePayment: 'Reduce payment',
+    extraPaymentRemove: 'Remove',
+    paymentNumberLabel: 'payment #',
+    optionalLabel: 'optional',
+
+    addRateChange: 'Add rate change',
+    newRate: 'New rate',
+    rateChangeAtPayment: 'At payment #',
+    rateChangeRemove: 'Remove',
+
+    scenarioComparison: 'Comparison',
+    originalLabel: 'Original',
+    scenarioLabel: 'With changes',
+    differenceLabel: 'Difference',
+    interestSaved: 'Interest saved',
+    paymentsSaved: 'Payments saved',
+    totalExtraPaymentsMade: 'Total extra payments',
+    monthsLabel: 'months',
+    newMonthlyPayment: 'New monthly payment',
+    scenarioSchedule: 'Modified Schedule',
+    scheduleExtraPayment: 'Extra',
+    scheduleRate: 'Rate',
+
+    startYear: 'Start year',
+    startMonth: 'Start month',
+
+    calculateScenario: 'Calculate scenario',
+    noEventsHint: 'Add extra payments or rate changes to see the impact on your mortgage.',
   },
 
   pl: {
     appTitle: 'Kalkulator kredytu hipotecznego',
     appSubtitle: 'Oblicz raty kredytu i zobacz szczegółowy harmonogram spłat',
+
+    tabCalculator: 'Kalkulator',
+    tabScenarios: 'Scenariusze',
 
     formTitle: 'Parametry kredytu',
     propertyPrice: 'Cena nieruchomości',
@@ -136,8 +257,14 @@ export const translations: Record<Language, Translations> = {
     dayCount365Description: 'Rzeczywista liczba dni w miesiącu, 365 dni/rok',
     dayCount360Description: '30 dni w miesiącu, 360 dni/rok',
 
+    firstPaymentAdjustment: 'Korekta pierwszej raty',
+    firstPeriodDays: 'Dni w pierwszym okresie',
+    firstPeriodDaysHint: 'Liczba dni od wypłaty kredytu do pierwszej raty (np. 45, jeśli wypłata w połowie miesiąca)',
+    enableFirstPaymentAdjustment: 'Koryguj pierwszą ratę',
+
     summaryTitle: 'Podsumowanie',
     monthlyPayment: 'Rata miesięczna',
+    firstPaymentLabel: 'Pierwsza rata',
     lastPayment: 'Ostatnia rata',
     loanAmountLabel: 'Kwota kredytu',
     totalInterest: 'Suma odsetek',
@@ -162,11 +289,60 @@ export const translations: Record<Language, Translations> = {
     currencyCode: 'PLN',
     currencySymbol: 'zł',
     locale: 'pl-PL',
+
+    scenarioTitle: 'Scenariusze "co jeśli"',
+    scenarioSubtitle: 'Sprawdź jak nadpłaty i zmiany oprocentowania wpłyną na Twój kredyt',
+    scenarioBaseLoan: 'Podstawowe parametry kredytu',
+    scenarioExtraPayments: 'Nadpłaty',
+    scenarioRateChanges: 'Zmiany oprocentowania',
+    scenarioResults: 'Wyniki scenariusza',
+
+    addExtraPayment: 'Dodaj nadpłatę',
+    extraPaymentAmount: 'Kwota',
+    extraPaymentFrequency: 'Częstotliwość',
+    extraPaymentOneTime: 'Jednorazowa',
+    extraPaymentMonthly: 'Co miesiąc',
+    extraPaymentYearly: 'Co rok',
+    extraPaymentStartAt: 'Od raty #',
+    extraPaymentEndAt: 'Do raty #',
+    extraPaymentEffect: 'Efekt',
+    extraPaymentReduceTerm: 'Skróć okres',
+    extraPaymentReducePayment: 'Zmniejsz ratę',
+    extraPaymentRemove: 'Usuń',
+    paymentNumberLabel: 'rata #',
+    optionalLabel: 'opcjonalnie',
+
+    addRateChange: 'Dodaj zmianę oprocentowania',
+    newRate: 'Nowa stawka',
+    rateChangeAtPayment: 'Od raty #',
+    rateChangeRemove: 'Usuń',
+
+    scenarioComparison: 'Porównanie',
+    originalLabel: 'Oryginał',
+    scenarioLabel: 'Ze zmianami',
+    differenceLabel: 'Różnica',
+    interestSaved: 'Zaoszczędzone odsetki',
+    paymentsSaved: 'Zaoszczędzone raty',
+    totalExtraPaymentsMade: 'Suma nadpłat',
+    monthsLabel: 'mies.',
+    newMonthlyPayment: 'Nowa rata miesięczna',
+    scenarioSchedule: 'Zmodyfikowany harmonogram',
+    scheduleExtraPayment: 'Nadpłata',
+    scheduleRate: 'Stawka',
+
+    startYear: 'Rok początkowy',
+    startMonth: 'Miesiąc początkowy',
+
+    calculateScenario: 'Oblicz scenariusz',
+    noEventsHint: 'Dodaj nadpłaty lub zmiany oprocentowania, aby zobaczyć wpływ na kredyt.',
   },
 
   ru: {
     appTitle: 'Ипотечный калькулятор',
     appSubtitle: 'Рассчитайте ежемесячные платежи и просмотрите график погашения',
+
+    tabCalculator: 'Калькулятор',
+    tabScenarios: 'Сценарии',
 
     formTitle: 'Параметры кредита',
     propertyPrice: 'Стоимость недвижимости',
@@ -176,10 +352,10 @@ export const translations: Record<Language, Translations> = {
     loanTermYears: 'лет',
     annualInterestRate: 'Годовая процентная ставка',
     paymentType: 'Тип платежей',
-    annuity: 'Аннуитетные (равные)',
-    differentiated: 'Дифференцированные',
+    annuity: 'Аннуитетные',
+    differentiated: 'Дифференц.',
     annuityDescription: 'Фиксированный платёж на весь срок кредита',
-    differentiatedDescription: 'Фиксированная часть основного долга, убывающие проценты',
+    differentiatedDescription: 'Дифференцированные: фикс. часть долга, убывающие проценты',
     interestCalculation: 'Начисление процентов',
     monthly: 'Ежемесячное',
     daily: 'Ежедневное',
@@ -188,8 +364,14 @@ export const translations: Record<Language, Translations> = {
     dayCount365Description: 'Фактическое число дней в месяце, 365 дней/год',
     dayCount360Description: '30 дней в месяце, 360 дней/год',
 
+    firstPaymentAdjustment: 'Корректировка первого платежа',
+    firstPeriodDays: 'Дней в первом периоде',
+    firstPeriodDaysHint: 'Кол-во дней от выдачи кредита до первого платежа (напр. 45, если выдача в середине месяца)',
+    enableFirstPaymentAdjustment: 'Корректировать первый платёж',
+
     summaryTitle: 'Итого',
     monthlyPayment: 'Ежемесячный платёж',
+    firstPaymentLabel: 'Первый платёж',
     lastPayment: 'Последний платёж',
     loanAmountLabel: 'Сумма кредита',
     totalInterest: 'Общая сумма процентов',
@@ -214,5 +396,51 @@ export const translations: Record<Language, Translations> = {
     currencyCode: 'RUB',
     currencySymbol: '₽',
     locale: 'ru-RU',
+
+    scenarioTitle: 'Сценарии "что если"',
+    scenarioSubtitle: 'Посмотрите, как досрочные платежи и изменение ставки повлияют на ипотеку',
+    scenarioBaseLoan: 'Базовые параметры кредита',
+    scenarioExtraPayments: 'Досрочные платежи',
+    scenarioRateChanges: 'Изменения ставки',
+    scenarioResults: 'Результаты сценария',
+
+    addExtraPayment: 'Добавить досрочный платёж',
+    extraPaymentAmount: 'Сумма',
+    extraPaymentFrequency: 'Периодичность',
+    extraPaymentOneTime: 'Разовый',
+    extraPaymentMonthly: 'Ежемесячно',
+    extraPaymentYearly: 'Ежегодно',
+    extraPaymentStartAt: 'С платежа №',
+    extraPaymentEndAt: 'До платежа №',
+    extraPaymentEffect: 'Результат',
+    extraPaymentReduceTerm: 'Сократить срок',
+    extraPaymentReducePayment: 'Уменьшить платёж',
+    extraPaymentRemove: 'Удалить',
+    paymentNumberLabel: 'платёж №',
+    optionalLabel: 'необязательно',
+
+    addRateChange: 'Добавить изменение ставки',
+    newRate: 'Новая ставка',
+    rateChangeAtPayment: 'С платежа №',
+    rateChangeRemove: 'Удалить',
+
+    scenarioComparison: 'Сравнение',
+    originalLabel: 'Оригинал',
+    scenarioLabel: 'С изменениями',
+    differenceLabel: 'Разница',
+    interestSaved: 'Экономия на процентах',
+    paymentsSaved: 'Сэкономлено платежей',
+    totalExtraPaymentsMade: 'Всего досрочных платежей',
+    monthsLabel: 'мес.',
+    newMonthlyPayment: 'Новый ежемесячный платёж',
+    scenarioSchedule: 'Изменённый график',
+    scheduleExtraPayment: 'Доп.',
+    scheduleRate: 'Ставка',
+
+    startYear: 'Год начала',
+    startMonth: 'Месяц начала',
+
+    calculateScenario: 'Рассчитать сценарий',
+    noEventsHint: 'Добавьте досрочные платежи или изменения ставки, чтобы увидеть их влияние.',
   },
 };

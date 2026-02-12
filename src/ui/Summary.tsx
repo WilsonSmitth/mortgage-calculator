@@ -18,14 +18,19 @@ export function Summary({ summary }: SummaryProps) {
         <p className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1 tabular-nums break-all">
           {formatCurrency(summary.monthlyPayment, t)}
         </p>
-        {summary.lastMonthlyPayment && (
+        {summary.firstPaymentAmount !== undefined && (
+          <p className="text-xs sm:text-sm text-amber-600 mt-1 font-medium">
+            {t.firstPaymentLabel}: {formatCurrency(summary.firstPaymentAmount, t)}
+          </p>
+        )}
+        {summary.lastMonthlyPayment !== undefined && (
           <p className="text-xs sm:text-sm text-gray-500 mt-1">
             {t.lastPayment}: {formatCurrency(summary.lastMonthlyPayment, t)}
           </p>
         )}
       </div>
 
-      {/* Secondary metrics - responsive grid */}
+      {/* Secondary metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
         <div className="bg-white rounded-md px-4 sm:px-5 py-3 sm:py-4 border border-gray-200">
           <p className="text-xs sm:text-sm text-gray-600">{t.loanAmountLabel}</p>

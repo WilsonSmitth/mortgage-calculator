@@ -4,6 +4,7 @@ import { calculateMortgage, validateMortgageInput } from './domain/mortgageCalcu
 import { MortgageForm } from './ui/MortgageForm';
 import { Summary } from './ui/Summary';
 import { ScheduleTable } from './ui/ScheduleTable';
+import { ScenarioSection } from './ui/ScenarioTab';
 import { Disclaimer } from './ui/Disclaimer';
 import { LanguageSelector } from './ui/LanguageSelector';
 import { LanguageProvider, useLanguage } from './i18n/LanguageContext';
@@ -23,7 +24,6 @@ function MortgageCalculator() {
   const { t } = useLanguage();
   const [formState, setFormState] = useState<MortgageFormState>(defaultFormState);
 
-  // Derive MortgageInput from form state
   const mortgageInput = useMemo(() => {
     const downPayment = formState.downPaymentMode === 'percentage'
       ? formState.propertyPrice * (formState.downPaymentValue / 100)
@@ -37,10 +37,10 @@ function MortgageCalculator() {
       paymentType: formState.paymentType,
       interestCalculationMethod: formState.interestCalculationMethod,
       dayCountConvention: formState.dayCountConvention,
+      firstPeriodDays: formState.firstPeriodDays,
     };
   }, [formState]);
 
-  // Calculate mortgage (memoized to prevent unnecessary recalculations)
   const result: MortgageResult | null = useMemo(() => {
     const errors = validateMortgageInput(mortgageInput);
     if (errors.length > 0) {
@@ -56,6 +56,7 @@ function MortgageCalculator() {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+        {/* Header */}
         <header className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
             <div className="min-w-0">
@@ -68,6 +69,7 @@ function MortgageCalculator() {
           </div>
         </header>
 
+        {/* Main calculator: form + results */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
           <div className="lg:col-span-1">
             <MortgageForm
@@ -80,6 +82,7 @@ function MortgageCalculator() {
             {result && (
               <>
                 <Summary summary={result.summary} />
+                <ScenarioSection mortgageInput={mortgageInput} />
                 <ScheduleTable schedule={result.schedule} />
               </>
             )}

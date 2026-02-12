@@ -3,16 +3,6 @@ import { calculateDailyInterestForMonth, getDaysInMonth } from './annuity';
 
 /**
  * Calculate differentiated payment for a specific month
- *
- * In differentiated payment scheme:
- * - Principal portion is constant: P / n (principal / total payments)
- * - Interest portion decreases as balance decreases
- * - Total payment = fixed principal + variable interest
- *
- * @param remainingBalance - Current remaining principal
- * @param fixedPrincipalPayment - Fixed principal portion each month
- * @param monthlyRate - Monthly interest rate
- * @returns Object with payment breakdown
  */
 export function calculateDifferentiatedPayment(
   remainingBalance: number,
@@ -31,16 +21,12 @@ export function calculateDifferentiatedPayment(
 
 /**
  * Generate differentiated payment schedule with monthly interest calculation
- *
- * @param params - Loan parameters
- * @param startYear - Year when loan starts
- * @param startMonth - Month when loan starts (1-12)
- * @returns Array of schedule entries
  */
 export function generateDifferentiatedScheduleMonthly(
   params: LoanParameters,
   startYear: number,
-  startMonth: number
+  startMonth: number,
+  firstPeriodDays?: number
 ): ScheduleEntry[] {
   const { principal, totalPayments, monthlyRate } = params;
   const fixedPrincipalPayment = principal / totalPayments;
@@ -51,15 +37,20 @@ export function generateDifferentiatedScheduleMonthly(
   let currentMonth = startMonth;
 
   for (let i = 1; i <= totalPayments; i++) {
-    const { payment, interestPayment, principalPayment } = calculateDifferentiatedPayment(
-      remainingBalance,
-      fixedPrincipalPayment,
-      monthlyRate
-    );
+    let interestPayment: number;
 
-    remainingBalance = Math.max(0, remainingBalance - principalPayment);
+    if (i === 1 && firstPeriodDays !== undefined && firstPeriodDays > 0) {
+      const annualRate = monthlyRate * 12;
+      const dailyRate = annualRate / 365;
+      interestPayment = remainingBalance * dailyRate * firstPeriodDays;
+    } else {
+      interestPayment = remainingBalance * monthlyRate;
+    }
 
-    // Fix floating point issues on last payment
+    const payment = fixedPrincipalPayment + interestPayment;
+
+    remainingBalance = Math.max(0, remainingBalance - fixedPrincipalPayment);
+
     if (i === totalPayments) {
       remainingBalance = 0;
     }
@@ -70,7 +61,7 @@ export function generateDifferentiatedScheduleMonthly(
       month: currentMonth,
       payment,
       interestPayment,
-      principalPayment,
+      principalPayment: fixedPrincipalPayment,
       remainingBalance,
     });
 
@@ -86,16 +77,12 @@ export function generateDifferentiatedScheduleMonthly(
 
 /**
  * Generate differentiated payment schedule with daily interest calculation
- *
- * @param params - Loan parameters
- * @param startYear - Year when loan starts
- * @param startMonth - Month when loan starts (1-12)
- * @returns Array of schedule entries
  */
 export function generateDifferentiatedScheduleDaily(
   params: LoanParameters,
   startYear: number,
-  startMonth: number
+  startMonth: number,
+  firstPeriodDays?: number
 ): ScheduleEntry[] {
   const { principal, totalPayments, dailyRate, dayCountConvention } = params;
   const fixedPrincipalPayment = principal / totalPayments;
@@ -106,13 +93,19 @@ export function generateDifferentiatedScheduleDaily(
   let currentMonth = startMonth;
 
   for (let i = 1; i <= totalPayments; i++) {
-    const daysInMonth = dayCountConvention === 360 ? 30 : getDaysInMonth(currentYear, currentMonth);
+    let daysInMonth: number;
+
+    if (i === 1 && firstPeriodDays !== undefined && firstPeriodDays > 0) {
+      daysInMonth = firstPeriodDays;
+    } else {
+      daysInMonth = dayCountConvention === 360 ? 30 : getDaysInMonth(currentYear, currentMonth);
+    }
+
     const interestPayment = calculateDailyInterestForMonth(remainingBalance, dailyRate, daysInMonth);
     const payment = fixedPrincipalPayment + interestPayment;
 
     remainingBalance = Math.max(0, remainingBalance - fixedPrincipalPayment);
 
-    // Fix floating point issues on last payment
     if (i === totalPayments) {
       remainingBalance = 0;
     }

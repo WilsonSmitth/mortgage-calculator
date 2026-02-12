@@ -12,27 +12,19 @@ interface MortgageFormProps {
   onChange: (value: MortgageFormState) => void;
 }
 
-// Mask for integer numbers only (no decimals)
 function maskInteger(str: string): string {
-  // Remove all non-digit characters
   return str.replace(/[^\d]/g, '');
 }
 
-// Mask for decimal numbers (digits and one decimal point)
 function maskDecimal(str: string): string {
-  // Remove all characters except digits and dots
   let result = str.replace(/[^\d.]/g, '');
-
-  // Ensure only one decimal point
   const parts = result.split('.');
   if (parts.length > 2) {
     result = parts[0] + '.' + parts.slice(1).join('');
   }
-
   return result;
 }
 
-// Helper to parse number from string, returning undefined for empty/invalid
 function parseNumber(str: string): number | undefined {
   if (str === '' || str === '.') return undefined;
   const num = parseFloat(str);
@@ -42,11 +34,14 @@ function parseNumber(str: string): number | undefined {
 export function MortgageForm({ value, onChange }: MortgageFormProps) {
   const { t } = useLanguage();
 
-  // Local string state for controlled inputs
   const [propertyPriceStr, setPropertyPriceStr] = useState(String(value.propertyPrice));
   const [downPaymentStr, setDownPaymentStr] = useState(String(value.downPaymentValue));
   const [loanTermStr, setLoanTermStr] = useState(String(value.loanTermYears));
   const [interestRateStr, setInterestRateStr] = useState(String(value.annualInterestRate * 100));
+  const [firstPeriodDaysStr, setFirstPeriodDaysStr] = useState(
+    value.firstPeriodDays !== undefined ? String(value.firstPeriodDays) : ''
+  );
+  const [showFirstPayment, setShowFirstPayment] = useState(value.firstPeriodDays !== undefined);
 
   const updateField = <K extends keyof MortgageFormState>(
     field: K,
@@ -65,7 +60,6 @@ export function MortgageForm({ value, onChange }: MortgageFormProps) {
   };
 
   const handlePropertyPriceBlur = () => {
-    // On blur, sync string with actual value
     setPropertyPriceStr(String(value.propertyPrice));
   };
 
@@ -110,8 +104,33 @@ export function MortgageForm({ value, onChange }: MortgageFormProps) {
 
   const handleDownPaymentModeChange = (mode: 'amount' | 'percentage') => {
     updateField('downPaymentMode', mode);
-    // Reset the string to match the current numeric value
     setDownPaymentStr(String(value.downPaymentValue));
+  };
+
+  const handleFirstPeriodDaysChange = (str: string) => {
+    const masked = maskInteger(str);
+    setFirstPeriodDaysStr(masked);
+    const num = parseNumber(masked);
+    if (num !== undefined && num >= 1 && num <= 365) {
+      updateField('firstPeriodDays', num);
+    } else if (masked === '') {
+      updateField('firstPeriodDays', undefined);
+    }
+  };
+
+  const handleFirstPeriodDaysBlur = () => {
+    setFirstPeriodDaysStr(
+      value.firstPeriodDays !== undefined ? String(value.firstPeriodDays) : ''
+    );
+  };
+
+  const handleToggleFirstPayment = () => {
+    const next = !showFirstPayment;
+    setShowFirstPayment(next);
+    if (!next) {
+      updateField('firstPeriodDays', undefined);
+      setFirstPeriodDaysStr('');
+    }
   };
 
   const loanAmount = value.downPaymentMode === 'percentage'
@@ -235,7 +254,7 @@ export function MortgageForm({ value, onChange }: MortgageFormProps) {
               key={type}
               type="button"
               onClick={() => updateField('paymentType', type)}
-              className={`px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-md border transition-colors
+              className={`px-2 sm:px-4 py-2 text-[11px] sm:text-sm font-medium rounded-md border transition-colors text-center leading-tight min-h-[2.5rem]
                 ${value.paymentType === type
                   ? 'bg-gray-800 text-white border-gray-800'
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
@@ -262,7 +281,7 @@ export function MortgageForm({ value, onChange }: MortgageFormProps) {
               key={method}
               type="button"
               onClick={() => updateField('interestCalculationMethod', method)}
-              className={`px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-md border transition-colors
+              className={`px-2 sm:px-4 py-2 text-[11px] sm:text-sm font-medium rounded-md border transition-colors text-center leading-tight min-h-[2.5rem]
                 ${value.interestCalculationMethod === method
                   ? 'bg-gray-800 text-white border-gray-800'
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
@@ -285,7 +304,7 @@ export function MortgageForm({ value, onChange }: MortgageFormProps) {
                 key={convention}
                 type="button"
                 onClick={() => updateField('dayCountConvention', convention)}
-                className={`px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-md border transition-colors
+                className={`px-2 sm:px-4 py-2 text-[11px] sm:text-sm font-medium rounded-md border transition-colors text-center leading-tight min-h-[2.5rem]
                   ${value.dayCountConvention === convention
                     ? 'bg-gray-800 text-white border-gray-800'
                     : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
@@ -301,6 +320,42 @@ export function MortgageForm({ value, onChange }: MortgageFormProps) {
           </p>
         </div>
       )}
+
+      {/* First Payment Adjustment */}
+      <div className="border-t border-gray-200 pt-4">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={showFirstPayment}
+            onChange={handleToggleFirstPayment}
+            className="w-4 h-4 rounded border-gray-300 text-gray-800 focus:ring-gray-400"
+          />
+          <span className="text-xs sm:text-sm font-medium text-gray-700">
+            {t.enableFirstPaymentAdjustment}
+          </span>
+        </label>
+
+        {showFirstPayment && (
+          <div className="mt-3">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+              {t.firstPeriodDays}
+            </label>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={firstPeriodDaysStr}
+              onChange={(e) => handleFirstPeriodDaysChange(e.target.value)}
+              onBlur={handleFirstPeriodDaysBlur}
+              placeholder="45"
+              className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-md
+                         focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              {t.firstPeriodDaysHint}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

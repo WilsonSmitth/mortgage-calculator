@@ -40,18 +40,19 @@ export function generateSchedule(
   startMonth: number = new Date().getMonth() + 1
 ): ScheduleEntry[] {
   const params = deriveLoanParameters(input);
+  const firstPeriodDays = input.firstPeriodDays;
 
   if (input.paymentType === 'annuity') {
     if (input.interestCalculationMethod === 'monthly') {
-      return generateAnnuityScheduleMonthly(params, startYear, startMonth);
+      return generateAnnuityScheduleMonthly(params, startYear, startMonth, firstPeriodDays);
     } else {
-      return generateAnnuityScheduleDaily(params, startYear, startMonth);
+      return generateAnnuityScheduleDaily(params, startYear, startMonth, firstPeriodDays);
     }
   } else {
     if (input.interestCalculationMethod === 'monthly') {
-      return generateDifferentiatedScheduleMonthly(params, startYear, startMonth);
+      return generateDifferentiatedScheduleMonthly(params, startYear, startMonth, firstPeriodDays);
     } else {
-      return generateDifferentiatedScheduleDaily(params, startYear, startMonth);
+      return generateDifferentiatedScheduleDaily(params, startYear, startMonth, firstPeriodDays);
     }
   }
 }
@@ -68,11 +69,18 @@ export function calculateSummary(
   const overpaymentRatio = principal > 0 ? totalInterestPaid / principal : 0;
 
   const firstPayment = schedule[0]?.payment ?? 0;
+  // For annuity with first-period adjustment: show the "regular" payment (2nd month),
+  // and surface the first payment separately
+  const secondPayment = schedule.length > 1 ? schedule[1].payment : firstPayment;
   const lastPayment = schedule[schedule.length - 1]?.payment ?? 0;
 
+  // If first payment differs from second by more than 1 cent, it's a first-period adjustment
+  const hasFirstPaymentAdjustment = Math.abs(firstPayment - secondPayment) > 0.01;
+
   return {
-    monthlyPayment: firstPayment,
-    lastMonthlyPayment: firstPayment !== lastPayment ? lastPayment : undefined,
+    monthlyPayment: hasFirstPaymentAdjustment ? secondPayment : firstPayment,
+    firstPaymentAmount: hasFirstPaymentAdjustment ? firstPayment : undefined,
+    lastMonthlyPayment: Math.abs(secondPayment - lastPayment) > 0.01 ? lastPayment : undefined,
     totalAmountPaid,
     totalInterestPaid,
     overpaymentRatio,

@@ -41,6 +41,18 @@ export interface MortgageInput {
 
   /** Day count convention (only relevant for daily calculation) */
   dayCountConvention: DayCountConvention;
+
+  /** Optional: custom first payment amount override */
+  firstPaymentOverride?: number;
+
+  /**
+   * Optional: number of days in first period.
+   * When loan disbursement date != first payment date - 1 month,
+   * the first payment covers a different number of days.
+   * E.g., loan on Jan 15, first payment Feb 1 — first period is 17 days,
+   * but interest accrues from Jan 15 to Mar 1 (45 days) making first payment higher.
+   */
+  firstPeriodDays?: number;
 }
 
 /**
@@ -90,6 +102,12 @@ export interface ScheduleEntry {
 
   /** Days in this month (for daily calculation display) */
   daysInMonth?: number;
+
+  /** Extra payment made this month (for scenarios) */
+  extraPayment?: number;
+
+  /** Interest rate active during this payment (for scenarios with rate changes) */
+  activeRate?: number;
 }
 
 /**
@@ -98,6 +116,9 @@ export interface ScheduleEntry {
 export interface MortgageSummary {
   /** Monthly payment (fixed for annuity, first month for differentiated) */
   monthlyPayment: number;
+
+  /** First payment amount if it differs from regular (first-period adjustment) */
+  firstPaymentAmount?: number;
 
   /** For differentiated: last month's payment */
   lastMonthlyPayment?: number;
@@ -130,4 +151,54 @@ export interface MortgageResult {
 export interface MortgageFormState extends Omit<MortgageInput, 'downPayment'> {
   downPaymentValue: number;
   downPaymentMode: 'amount' | 'percentage';
+}
+
+// ============= Scenario Types =============
+
+export type ExtraPaymentFrequency = 'one-time' | 'monthly' | 'yearly';
+
+export interface ExtraPaymentEvent {
+  id: string;
+  amount: number;
+  frequency: ExtraPaymentFrequency;
+  /** Payment number when this starts (1-indexed) */
+  startAtPayment: number;
+  /** For monthly/yearly: payment number when this stops (inclusive) */
+  endAtPayment?: number;
+  /** How to apply: reduce monthly payment or reduce term */
+  effect: 'reduce-payment' | 'reduce-term';
+}
+
+export interface RateChangeEvent {
+  id: string;
+  /** New annual interest rate as decimal */
+  newRate: number;
+  /** Payment number when rate changes (1-indexed) */
+  atPayment: number;
+}
+
+export interface ScenarioInput {
+  baseInput: MortgageInput;
+  startYear: number;
+  startMonth: number;
+  extraPayments: ExtraPaymentEvent[];
+  rateChanges: RateChangeEvent[];
+}
+
+export interface ScenarioSummary {
+  originalTotalInterest: number;
+  originalTotalPayments: number;
+  originalMonthlyPayment: number;
+  newTotalInterest: number;
+  newTotalPayments: number;
+  newMonthlyPayment: number;
+  interestSaved: number;
+  paymentsSaved: number;
+  totalExtraPayments: number;
+}
+
+export interface ScenarioResult {
+  summary: ScenarioSummary;
+  schedule: ScheduleEntry[];
+  originalSchedule: ScheduleEntry[];
 }
