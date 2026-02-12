@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type {
   MortgageInput,
   ExtraPaymentEvent,
@@ -8,10 +8,11 @@ import type {
 } from '../domain/mortgageTypes';
 import { validateMortgageInput } from '../domain/mortgageCalculator';
 import { calculateScenario } from '../domain/scenarioCalculator';
-import { useLanguage, formatCurrency, formatPercent } from '../i18n/LanguageContext';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface ScenarioSectionProps {
   mortgageInput: MortgageInput;
+  onResultChange: (result: ScenarioResult | null) => void;
 }
 
 let nextId = 1;
@@ -32,7 +33,7 @@ function maskDecimal(str: string): string {
   return result;
 }
 
-export function ScenarioSection({ mortgageInput }: ScenarioSectionProps) {
+export function ScenarioSection({ mortgageInput, onResultChange }: ScenarioSectionProps) {
   const { t } = useLanguage();
 
   const [isExpanded, setIsExpanded] = useState(false);
@@ -59,7 +60,11 @@ export function ScenarioSection({ mortgageInput }: ScenarioSectionProps) {
     }
   }, [mortgageInput, extraPayments, rateChanges, startYear, startMonth]);
 
-  // Auto-expand when there are events
+  // Notify parent of result changes
+  useEffect(() => {
+    onResultChange(result);
+  }, [result, onResultChange]);
+
   const hasEvents = extraPayments.length > 0 || rateChanges.length > 0;
 
   // Extra payment handlers
@@ -188,14 +193,6 @@ export function ScenarioSection({ mortgageInput }: ScenarioSectionProps) {
               ))}
             </div>
           </div>
-
-          {/* Results */}
-          {hasEvents && result && (
-            <>
-              <ScenarioComparisonSummary result={result} />
-              <ScenarioScheduleTable result={result} />
-            </>
-          )}
         </div>
       )}
     </div>
@@ -398,148 +395,6 @@ function RateChangeCard({
           {t.rateChangeRemove}
         </button>
       </div>
-    </div>
-  );
-}
-
-function ScenarioComparisonSummary({ result }: { result: ScenarioResult }) {
-  const { t } = useLanguage();
-  const { summary } = result;
-
-  return (
-    <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
-      <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">{t.scenarioComparison}</h3>
-
-      {/* Key savings */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-        <div className="bg-green-50 border border-green-200 rounded-md px-4 py-3">
-          <p className="text-xs text-green-700">{t.interestSaved}</p>
-          <p className="text-lg sm:text-xl font-bold text-green-800 tabular-nums break-all">
-            {formatCurrency(summary.interestSaved, t)}
-          </p>
-        </div>
-        <div className="bg-blue-50 border border-blue-200 rounded-md px-4 py-3">
-          <p className="text-xs text-blue-700">{t.paymentsSaved}</p>
-          <p className="text-lg sm:text-xl font-bold text-blue-800 tabular-nums">
-            {summary.paymentsSaved} {t.monthsLabel}
-          </p>
-        </div>
-        <div className="bg-gray-100 border border-gray-200 rounded-md px-4 py-3">
-          <p className="text-xs text-gray-600">{t.totalExtraPaymentsMade}</p>
-          <p className="text-lg sm:text-xl font-bold text-gray-900 tabular-nums break-all">
-            {formatCurrency(summary.totalExtraPayments, t)}
-          </p>
-        </div>
-      </div>
-
-      {/* Comparison table */}
-      <div className="overflow-x-auto border border-gray-200 rounded-md">
-        <table className="w-full text-xs sm:text-sm min-w-[400px]">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="px-3 py-2 text-left font-medium text-gray-700"></th>
-              <th className="px-3 py-2 text-right font-medium text-gray-700 whitespace-nowrap">{t.originalLabel}</th>
-              <th className="px-3 py-2 text-right font-medium text-gray-700 whitespace-nowrap">{t.scenarioLabel}</th>
-              <th className="px-3 py-2 text-right font-medium text-gray-700 whitespace-nowrap">{t.differenceLabel}</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-100">
-            <tr>
-              <td className="px-3 py-2 text-gray-600 whitespace-nowrap">{t.monthlyPayment}</td>
-              <td className="px-3 py-2 text-right tabular-nums whitespace-nowrap">{formatCurrency(summary.originalMonthlyPayment, t)}</td>
-              <td className="px-3 py-2 text-right tabular-nums whitespace-nowrap">{formatCurrency(summary.newMonthlyPayment, t)}</td>
-              <td className="px-3 py-2 text-right tabular-nums whitespace-nowrap">
-                {formatCurrency(summary.newMonthlyPayment - summary.originalMonthlyPayment, t)}
-              </td>
-            </tr>
-            <tr>
-              <td className="px-3 py-2 text-gray-600 whitespace-nowrap">{t.totalInterest}</td>
-              <td className="px-3 py-2 text-right tabular-nums whitespace-nowrap">{formatCurrency(summary.originalTotalInterest, t)}</td>
-              <td className="px-3 py-2 text-right tabular-nums whitespace-nowrap">{formatCurrency(summary.newTotalInterest, t)}</td>
-              <td className="px-3 py-2 text-right tabular-nums text-green-700 font-medium whitespace-nowrap">
-                {formatCurrency(summary.newTotalInterest - summary.originalTotalInterest, t)}
-              </td>
-            </tr>
-            <tr>
-              <td className="px-3 py-2 text-gray-600 whitespace-nowrap">{t.paymentsCount}</td>
-              <td className="px-3 py-2 text-right tabular-nums">{summary.originalTotalPayments}</td>
-              <td className="px-3 py-2 text-right tabular-nums">{summary.newTotalPayments}</td>
-              <td className="px-3 py-2 text-right tabular-nums text-blue-700 font-medium">
-                {summary.newTotalPayments - summary.originalTotalPayments}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-function ScenarioScheduleTable({ result }: { result: ScenarioResult }) {
-  const { t } = useLanguage();
-  const { schedule } = result;
-
-  return (
-    <div className="bg-gray-50 rounded-lg p-4 sm:p-6">
-      <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">{t.scenarioSchedule}</h3>
-
-      <div className="overflow-x-auto max-h-80 sm:max-h-96 border border-gray-200 rounded-md">
-        <table className="w-full text-xs sm:text-sm min-w-[600px]">
-          <thead className="bg-gray-100 sticky top-0">
-            <tr>
-              <th className="px-2 sm:px-3 py-2 text-left font-medium text-gray-700 border-b border-gray-200">{t.scheduleNumber}</th>
-              <th className="px-2 sm:px-3 py-2 text-left font-medium text-gray-700 border-b border-gray-200">{t.scheduleDate}</th>
-              <th className="px-2 sm:px-3 py-2 text-right font-medium text-gray-700 border-b border-gray-200">{t.schedulePayment}</th>
-              <th className="px-2 sm:px-3 py-2 text-right font-medium text-gray-700 border-b border-gray-200">{t.schedulePrincipal}</th>
-              <th className="px-2 sm:px-3 py-2 text-right font-medium text-gray-700 border-b border-gray-200">{t.scheduleInterest}</th>
-              <th className="px-2 sm:px-3 py-2 text-right font-medium text-gray-700 border-b border-gray-200">{t.scheduleExtraPayment}</th>
-              <th className="px-2 sm:px-3 py-2 text-right font-medium text-gray-700 border-b border-gray-200">{t.scheduleRate}</th>
-              <th className="px-2 sm:px-3 py-2 text-right font-medium text-gray-700 border-b border-gray-200">{t.scheduleBalance}</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-100">
-            {schedule.map((entry) => (
-              <tr
-                key={entry.paymentNumber}
-                className={`hover:bg-gray-50 transition-colors ${entry.extraPayment ? 'bg-green-50/50' : ''}`}
-              >
-                <td className="px-2 sm:px-3 py-1.5 text-gray-600 tabular-nums">{entry.paymentNumber}</td>
-                <td className="px-2 sm:px-3 py-1.5 text-gray-900 whitespace-nowrap">
-                  {t.months[entry.month - 1]} {entry.year}
-                </td>
-                <td className="px-2 sm:px-3 py-1.5 text-right text-gray-900 font-medium tabular-nums whitespace-nowrap">
-                  {formatCurrency(entry.payment, t)}
-                </td>
-                <td className="px-2 sm:px-3 py-1.5 text-right text-gray-700 tabular-nums whitespace-nowrap">
-                  {formatCurrency(entry.principalPayment, t)}
-                </td>
-                <td className="px-2 sm:px-3 py-1.5 text-right text-gray-500 tabular-nums whitespace-nowrap">
-                  {formatCurrency(entry.interestPayment, t)}
-                </td>
-                <td className="px-2 sm:px-3 py-1.5 text-right tabular-nums whitespace-nowrap">
-                  {entry.extraPayment ? (
-                    <span className="text-green-700 font-medium">
-                      {formatCurrency(entry.extraPayment, t)}
-                    </span>
-                  ) : (
-                    <span className="text-gray-300">-</span>
-                  )}
-                </td>
-                <td className="px-2 sm:px-3 py-1.5 text-right text-gray-500 tabular-nums whitespace-nowrap">
-                  {entry.activeRate !== undefined ? formatPercent(entry.activeRate, t) : '-'}
-                </td>
-                <td className="px-2 sm:px-3 py-1.5 text-right text-gray-900 tabular-nums whitespace-nowrap">
-                  {formatCurrency(entry.remainingBalance, t)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <p className="text-xs text-gray-500 mt-2">
-        {t.paymentsCount}: {schedule.length}
-      </p>
     </div>
   );
 }

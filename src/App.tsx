@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import type { MortgageFormState, MortgageResult } from './domain/mortgageTypes';
+import { useState, useMemo, useCallback } from 'react';
+import type { MortgageFormState, MortgageResult, ScenarioResult } from './domain/mortgageTypes';
 import { calculateMortgage, validateMortgageInput } from './domain/mortgageCalculator';
 import { MortgageForm } from './ui/MortgageForm';
 import { Summary } from './ui/Summary';
@@ -23,6 +23,7 @@ const defaultFormState: MortgageFormState = {
 function MortgageCalculator() {
   const { t } = useLanguage();
   const [formState, setFormState] = useState<MortgageFormState>(defaultFormState);
+  const [scenarioResult, setScenarioResult] = useState<ScenarioResult | null>(null);
 
   const mortgageInput = useMemo(() => {
     const downPayment = formState.downPaymentMode === 'percentage'
@@ -53,6 +54,14 @@ function MortgageCalculator() {
     }
   }, [mortgageInput]);
 
+  const handleScenarioResultChange = useCallback((r: ScenarioResult | null) => {
+    setScenarioResult(r);
+  }, []);
+
+  // Determine which schedule to display: scenario replaces the base schedule
+  const displaySchedule = scenarioResult ? scenarioResult.schedule : result?.schedule;
+  const hasScenario = scenarioResult !== null;
+
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
@@ -81,9 +90,11 @@ function MortgageCalculator() {
           <div className="lg:col-span-2 space-y-4 sm:space-y-8">
             {result && (
               <>
-                <Summary summary={result.summary} />
-                <ScenarioSection mortgageInput={mortgageInput} />
-                <ScheduleTable schedule={result.schedule} />
+                <Summary summary={result.summary} scenarioSummary={scenarioResult?.summary ?? null} />
+                <ScenarioSection mortgageInput={mortgageInput} onResultChange={handleScenarioResultChange} />
+                {displaySchedule && (
+                  <ScheduleTable schedule={displaySchedule} hasScenario={hasScenario} />
+                )}
               </>
             )}
           </div>
